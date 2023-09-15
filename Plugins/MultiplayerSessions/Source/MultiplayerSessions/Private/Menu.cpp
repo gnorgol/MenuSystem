@@ -2,6 +2,8 @@
 
 
 #include "Menu.h"
+#include "Components/Button.h"
+#include "MultiplayerSessionsSubsystem.h"
 
 void UMenu::MenuSetup()
 {
@@ -19,4 +21,44 @@ void UMenu::MenuSetup()
 	PlayerController->SetInputMode(InputModeData);
 	PlayerController->bShowMouseCursor = true;
 
+	UGameInstance* GameInstance = World->GetGameInstance();
+	if (!ensure(GameInstance != nullptr)) return;
+	MultiplayerSessionsSubsystem = GameInstance->GetSubsystem<UMultiplayerSessionsSubsystem>();
+
+}
+
+bool UMenu::Initialize()
+{
+	if (!Super::Initialize())
+	{
+		return false;
+	}
+	if (HostButton)
+	{
+		HostButton->OnClicked.AddDynamic(this, &ThisClass::HostButtonClicked);
+	}
+	if (JoinButton)
+	{
+		JoinButton->OnClicked.AddDynamic(this, &ThisClass::JoinButtonClicked);
+	}
+
+	return true;
+}
+
+void UMenu::HostButtonClicked()
+{
+	if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Host Button Clicked"));
+	if (MultiplayerSessionsSubsystem)
+	{
+		MultiplayerSessionsSubsystem->CreateSession(4,FString("FreeForAll"));
+	}
+}
+
+void UMenu::JoinButtonClicked()
+{
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Join Button Clicked"));
+	if (MultiplayerSessionsSubsystem)
+	{
+		MultiplayerSessionsSubsystem->FindSessions(32);
+	}
 }
