@@ -5,8 +5,10 @@
 #include "Components/Button.h"
 #include "MultiplayerSessionsSubsystem.h"
 
-void UMenu::MenuSetup()
+void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch)
 {
+	MaxNumPlayers = NumberOfPublicConnections;
+	GameMode = TypeOfMatch;
 	AddToViewport();
 	SetVisibility(ESlateVisibility::Visible);
 	bIsFocusable = true;
@@ -45,12 +47,26 @@ bool UMenu::Initialize()
 	return true;
 }
 
+void UMenu::NativeDestruct()
+{
+	Super::NativeDestruct();
+	MenuTeardown();
+}
+
+
+
 void UMenu::HostButtonClicked()
 {
 	if(GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Host Button Clicked"));
 	if (MultiplayerSessionsSubsystem)
 	{
-		MultiplayerSessionsSubsystem->CreateSession(4,FString("FreeForAll"));
+		MultiplayerSessionsSubsystem->CreateSession(MaxNumPlayers,GameMode);
+		UWorld* World = GetWorld();
+		if (World)
+		{
+			World->ServerTravel("/Game/ThirdPerson/Maps/Lobby?listen");
+		}
+		
 	}
 }
 
@@ -61,4 +77,19 @@ void UMenu::JoinButtonClicked()
 	{
 		MultiplayerSessionsSubsystem->FindSessions(32);
 	}
+}
+
+void UMenu::MenuTeardown()
+{
+	RemoveFromParent();
+	SetVisibility(ESlateVisibility::Hidden);
+	bIsFocusable = false;
+
+	UWorld* World = GetWorld();
+	if (!ensure(World != nullptr)) return;
+	APlayerController* PlayerController = World->GetFirstPlayerController();
+	if (!ensure(PlayerController != nullptr)) return;
+	FInputModeGameOnly InputModeData;
+	PlayerController->SetInputMode(InputModeData);
+	PlayerController->bShowMouseCursor = false;
 }
