@@ -23,7 +23,14 @@ protected:
 
 	// Callbacks for the custom delegates
 	UFUNCTION()
-	void OnCreateSession(bool bWasSuccessful);
+		void OnCreateSession(bool bWasSuccessful);
+
+	void OnFindSessions(bool bWasSuccessful, const TArray<FOnlineSessionSearchResult>& SessionResult);
+	void OnJoinSession(EOnJoinSessionCompleteResult::Type Result);
+	UFUNCTION()
+		void OnStartSession(bool bWasSuccessful);
+	UFUNCTION()
+		void OnDestroySession(bool bWasSuccessful);
 private:
 
 	UPROPERTY(meta = (BindWidget))
