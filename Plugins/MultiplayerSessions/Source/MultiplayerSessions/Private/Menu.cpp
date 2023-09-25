@@ -135,6 +135,20 @@ if (OnlineSubsystem)
 
 void UMenu::OnStartSession(bool bWasSuccessful)
 {
+	if (bWasSuccessful)
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Session Started"));
+		}
+	}
+	else
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Session Start Failed"));
+		}
+	}
 }
 
 void UMenu::OnDestroySession(bool bWasSuccessful)
