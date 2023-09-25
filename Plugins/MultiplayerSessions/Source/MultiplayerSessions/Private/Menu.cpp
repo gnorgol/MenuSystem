@@ -85,6 +85,7 @@ void UMenu::OnCreateSession(bool bWasSuccessful)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Session Creation Failed"));
 		}		
+		HostButton->SetIsEnabled(true);
 	}
 }
 
@@ -107,14 +108,21 @@ void UMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResu
 			MultiplayerSessionsSubsystem->JoinSession(Result);
 			return;
 		}
-
+	}
+	if (!bWasSuccessful || SessionResults.Num() == 0)
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Session Find Failed"));
+		}
+		JoinButton->SetIsEnabled(true);
 	}
 }
 
 void UMenu::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
 {
 	IOnlineSubsystem* OnlineSubsystem = IOnlineSubsystem::Get();
-if (OnlineSubsystem)
+	if (OnlineSubsystem)
 	{
 		IOnlineSessionPtr SessionInterface = OnlineSubsystem->GetSessionInterface();
 		if (SessionInterface.IsValid())
@@ -129,6 +137,14 @@ if (OnlineSubsystem)
 				}
 			}
 		}
+	}
+	if (Result != EOnJoinSessionCompleteResult::Success)
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Session Join Failed"));
+		}
+		JoinButton->SetIsEnabled(true);
 	}
 }
 
@@ -160,19 +176,18 @@ void UMenu::OnDestroySession(bool bWasSuccessful)
 
 void UMenu::HostButtonClicked()
 {
+	HostButton->SetIsEnabled(false);
 	if (MultiplayerSessionsSubsystem)
 	{
 		MultiplayerSessionsSubsystem->CreateSession(MaxNumPlayers,GameMode);
+
 		
 	}
 }
 
 void UMenu::JoinButtonClicked()
 {
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Join Button Clicked"));
-	}
+	JoinButton->SetIsEnabled(false);
 	if (MultiplayerSessionsSubsystem)
 	{
 		MultiplayerSessionsSubsystem->FindSessions(10000);
